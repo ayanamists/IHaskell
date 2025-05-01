@@ -215,10 +215,14 @@ heartbeat _ sock = do
 shell :: Bool -> ZeroMQInterface -> Socket Router -> IO ()
 shell debug channels sock = do
   -- Receive a message and write it to the interface channel.
-  receiveMessage debug sock >>= writeChan requestChannel
+  rm <- receiveMessage debug sock
+  putStrLn $ "Shell request received: " ++ show rm ++ "\n"
+  writeChan requestChannel rm
 
   -- Read the reply from the interface channel and send it.
-  readChan replyChannel >>= sendMessage debug (hmacKey channels) sock
+  m <- readChan replyChannel
+  putStrLn $ "Shell message will be sent: " ++ show m ++ "\n"
+  sendMessage debug (hmacKey channels) sock m
 
   where
     requestChannel = shellRequestChannel channels
@@ -230,10 +234,14 @@ shell debug channels sock = do
 control :: Bool -> ZeroMQInterface -> Socket Router -> IO ()
 control debug channels sock = do
   -- Receive a message and write it to the interface channel.
-  receiveMessage debug sock >>= writeChan requestChannel
+  rm <- receiveMessage debug sock
+  putStrLn $ "Control request received: " ++ show rm ++ "\n"
+  writeChan requestChannel rm
 
   -- Read the reply from the interface channel and send it.
-  readChan replyChannel >>= sendMessage debug (hmacKey channels) sock
+  m <- readChan replyChannel
+  putStrLn $ "Control message will be sent: " ++ show m ++ "\n"
+  sendMessage debug (hmacKey channels) sock m
 
   where
     requestChannel = controlRequestChannel channels

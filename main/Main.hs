@@ -205,6 +205,7 @@ runKernel kOpts profileSrc = do
 
       -- We handle comm messages and normal ones separately. The normal ones are a standard
       -- request/response style, while comms can be anything, and don't necessarily require a response.
+      liftIO $ putStrLn $ "Main.hs: read shell request: " ++ show request ++ "\n"
       if isCommMessage request
         then do
           oldState <- liftIO $ takeMVar state
@@ -213,6 +214,7 @@ runKernel kOpts profileSrc = do
           tempState <- handleComm replier oldState request replyHeader
           newState <- flushWidgetMessages tempState [] widgetMessageHandler
           liftIO $ putMVar state newState
+          putStrLn $ "Main.hs: write shell reply: " ++ (show SendNothing) ++ "\n"
           liftIO $ writeChan (shellReplyChannel interface) SendNothing
         else do
           -- Create the reply, possibly modifying kernel state.
@@ -220,6 +222,7 @@ runKernel kOpts profileSrc = do
           (newState, reply) <- replyTo kOpts interface request replyHeader oldState
           liftIO $ putMVar state newState
 
+          liftIO $ putStrLn $ "Main.hs: write shell reply: " ++ show reply ++ "\n"
           -- Write the reply to the reply channel.
           liftIO $ writeChan (shellReplyChannel interface) reply
 
